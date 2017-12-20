@@ -1,0 +1,30 @@
+{
+  "l298n":{
+    "pin":[31, 33, 35, 37],
+    "pwm":{
+      "pin":[0, 0],
+      "frq":50
+    }
+  },
+  "sg90":{
+    "vertical":{"pin":8,
+    "angle":90
+    },
+    "horizontal":{
+      "pin":11,
+      "angle":90
+    }
+  },
+  "infrared_obstacle":{
+    "left":13,
+    "right":12
+  },
+  "hcsr04":{
+    "pins":{
+      "trig":23,
+      "echo":24
+    },
+    "interval":0.01,
+    "voice_speed":340
+  }
+}
