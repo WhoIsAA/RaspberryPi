@@ -10,14 +10,17 @@ from handler.base import BaseHandler
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
 atexit.register(GPIO.cleanup)
-
+# 打开配置文件，初始化小车实例
 with open("./static/config.json") as file:
     config = json.load(file)
-
 car = SmartCar(config)
 
 
 class ConnectTestHandler(BaseHandler):
+
+    '''
+    测试小车是否正常连接
+    '''
 
     def _create_json(self):
         json_data = {}
@@ -33,6 +36,10 @@ class ConnectTestHandler(BaseHandler):
 
 
 class CarControlHandler(BaseHandler):
+
+    '''
+    小车方向控制
+    '''
 
     def _create_json(self):
         action = self.get_argument('action')
@@ -67,6 +74,10 @@ class CarControlHandler(BaseHandler):
 
 class ServoControlHandler(BaseHandler):
 
+    '''
+    舵机方向控制
+    '''
+
     def _create_json(self):
         orientation = self.get_argument('orientation')
         angle = self.get_argument('angle')
@@ -88,3 +99,11 @@ class ServoControlHandler(BaseHandler):
 
     def post(self, *args, **kwargs):
         self._create_json()
+
+class CameraControlHandler(BaseHandler):
+
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        return super().post(*args, **kwargs)
