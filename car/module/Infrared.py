@@ -7,6 +7,7 @@ class Infrared(Thread):
     #右：12
 
     def __init__(self, config):
+        super().__init__()
         self.left_pin = config["left"]
         self.right_pin = config["right"]
         GPIO.setup([self.left_pin, self.right_pin], GPIO.IN)

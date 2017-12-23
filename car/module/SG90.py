@@ -43,7 +43,6 @@ class SG90:
             self.servo.ChangeDutyCycle(2.5 + 10 * i / 180)
             sleep(0.02)
             self.servo.ChangeDutyCycle(0)
-            sleep(0.1)
         self.current_angle = angle
 
 

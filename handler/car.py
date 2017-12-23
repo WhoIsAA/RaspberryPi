@@ -79,8 +79,8 @@ class ServoControlHandler(BaseHandler):
     '''
 
     def _create_json(self):
-        orientation = self.get_argument('orientation')
-        angle = self.get_argument('angle')
+        orientation = int(self.get_argument('orientation'))
+        angle = int(self.get_argument('angle'))
         if orientation == 0:
             car.servo_hr_move_to(angle)
         elif orientation == 1:
@@ -91,8 +91,7 @@ class ServoControlHandler(BaseHandler):
         json_data = {}
         json_data['hrAngle'] = car.get_servo_angle_hr()
         json_data['vtAngle'] = car.get_servo_angle_vt()
-        self.write(
-            self.normal_json("servo control, orientation:%s, angle:%s successed" % (orientation, angle), json_data))
+        self.write(self.normal_json("servo control, orientation:%s, angle:%s successed" % (orientation, angle), json_data))
 
     def get(self, *args, **kwargs):
         self._create_json()
