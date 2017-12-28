@@ -101,8 +101,33 @@ class ServoControlHandler(BaseHandler):
 
 class CameraControlHandler(BaseHandler):
 
+    """
+    摄像头控制
+    """
+
+    def _create_json(self):
+        action = self.get_argument('action')
+        if action == 'take_picture':
+            car.take_picture()
+            self.write(self.get_response(desc="camera control, %s successed" % action))
+        elif action == 'continuous_photo':
+            count = self.get_argument("count")
+            delay = self.get_argument("delay")
+            car.continuous_photo(count, delay)
+            self.write(self.get_response(desc="camera control, %s successed" % action))
+        elif action == 'record_video':
+            seconds = self.get_argument("seconds")
+            car.record_video(seconds)
+            self.write(self.get_response(desc="camera control, %s successed" % action))
+        elif action == 'preview':
+            type = self.get_argument("type")
+            datas = car.preview(type)
+            self.write(self.normal_json("camera control, %s successed" % action, datas))
+        else:
+            return
+
     def get(self, *args, **kwargs):
-        return super().get(*args, **kwargs)
+        self._create_json()
 
     def post(self, *args, **kwargs):
-        return super().post(*args, **kwargs)
+        self._create_json()

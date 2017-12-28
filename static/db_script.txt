@@ -1,0 +1,8 @@
+create database rspi character set utf8;
+
+create table if not exists qiniu(id int unsigned not null primary key auto_increment, filename text not null, hash text not null, fkey text not null, url text not null, mimeType text, type int, thumbnail text, videoTime int unsigned, fsize int unsigned, putTime int unsigned);
+
+insert into users(username, password, email) values("aa", "123456", "12306@qq.com")
+
+
+

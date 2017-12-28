@@ -1,6 +1,6 @@
 import atexit
 from RPi import GPIO
-from car.module import SG90, Infrared, L298N
+from car.module import SG90, Infrared, L298N, Camera
 
 
 class SmartCar(object):
@@ -13,6 +13,7 @@ class SmartCar(object):
         self.init_l298n(config["l298n"])
         self.init_sg90(config["sg90"])
         self.init_infrared(config["infrared_obstacle"])
+        self.init_camera()
 
     def init_l298n(self, config):
         self._l298n = L298N.L298N(config)
@@ -24,6 +25,9 @@ class SmartCar(object):
     def init_infrared(self, config):
         self._infrared = Infrared.Infrared(config)
         self._infrared.start()
+
+    def init_camera(self):
+        self._camera = Camera.Camera()
 
     def get_servo_angle_hr(self):
         #获得水平舵机当前角度
@@ -86,3 +90,16 @@ class SmartCar(object):
     def servo_reset(self):
         self._sg90_hr.reset()
         self._sg90_vt.reset()
+
+    def take_picture(self):
+        return self._camera.take_picture()
+
+    def continuous_photo(self, count, delay):
+        return self._camera.continuous_photo(count, delay)
+
+    def record_video(self, seconds):
+        return self._camera.record_video(seconds)
+
+    def preview(self, type):
+        return self._camera.preview(type)
+

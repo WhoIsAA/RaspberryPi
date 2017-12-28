@@ -2,10 +2,9 @@
 # coding=utf-8
 
 import os
-import requests
 import time
 from picamera import PiCamera
-from qiniu import Auth, put_file, etag
+from methods.qiniu import Qiniu
 
 
 class Camera:
@@ -14,6 +13,9 @@ class Camera:
         self.camera_path = "/home/pi/rspi_images/"
         self.camera_resolution = (1280, 720)
         self.camera_rotation = 180
+        self.prefix_image = "image"
+        self.prefix_video = "video"
+        self._qiniu = Qiniu()
         if not os.path.exists(self.camera_path):
             os.mkdir(self.camera_path)
 
@@ -35,6 +37,30 @@ class Camera:
         timestr = time.strftime("%Y-%m-%d-%H-%M-%S", timeArray)
         return "video_%s.h264" % timestr
 
+    def get_url(self, key):
+        """
+        获得资源外链
+        :param key:文件名
+        :return:
+        """
+        return self._qiniu.get_url(key)
+
+    def get_video_thumbnail(self, key):
+        """
+        获得视频缩略图
+        :param key:
+        :return:
+        """
+        return self._qiniu.get_video_thumbnail(key)
+
+    def get_video_duration(self, key):
+        """
+        获得视频时长
+        :param key:
+        :return:
+        """
+        return self._qiniu.get_video_duration(key)
+
     def take_picture(self):
         """
         拍一张图片
@@ -44,12 +70,12 @@ class Camera:
             camera.resolution = self.camera_resolution
             camera.rotation = self.camera_rotation
             camera.start_preview()
-            #捕获图片前，至少要给传感器两秒钟时间感光
+            # 捕获图片前，至少要给传感器两秒钟时间感光
             time.sleep(2)
             filename = self._get_image_filename()
             camera.capture("%s%s" % (self.camera_path, filename))
-            print(filename)
-        return filename
+            print("* 拍照成功：", filename)
+        return self._qiniu.upload_file(self.camera_path, filename, self.prefix_image)
 
     def continuous_photo(self, count, delay):
         """
@@ -62,6 +88,7 @@ class Camera:
             return
 
         img_list = []
+        img_urls = []
         with PiCamera() as camera:
             camera.resolution = self.camera_resolution
             camera.rotation = self.camera_rotation
@@ -69,12 +96,14 @@ class Camera:
             # 捕获图片前，至少要给传感器两秒钟时间感光
             time.sleep(2)
             for i, filename in enumerate(camera.capture_continuous('img_{timestamp:%Y-%m-%d-%H-%M-%S}.jpg')):
-                print(filename)
                 img_list.append(filename)
                 time.sleep(delay)
                 if i == count:
                     break;
-        return img_list
+        print("* 连拍成功：", img_list)
+        for img in img_list:
+            img_urls.append(self._qiniu.upload_file(self.camera_path, img, self.prefix_image))
+        return img_urls
 
     def record_video(self, seconds):
         """
@@ -91,65 +120,21 @@ class Camera:
             camera.start_recording(filename)
             camera.wait_recording(seconds)
             camera.stop_recording()
-        return filename
+        return self._qiniu.upload_file(self.camera_path, filename, self.prefix_video)
 
-qiniu_config = {
-    "base_url": "",
-    "access_key": "",
-    "secret_key": "",
-    "bucket_name": "",
-}
-
-def upload_file(path, filename):
-    """
-    将文件上传到七牛
-    :param file_path: 文件绝对路径
-    :return:
-    """
-    if not os.path.isfile(path + filename):
-        return
-
-    # 构建鉴权对象
-    qn = Auth(qiniu_config["access_key"], qiniu_config["secret_key"])
-    # 生成上传 Token，可以指定过期时间等
-    token = qn.upload_token(qiniu_config["bucket_name"], filename)
-    # 上传文件到七牛
-    ret, info = put_file(token, filename, path + filename)
-    print(info)
-    # 等待上传成功
-    assert ret["key"] == filename
-    assert ret["hash"] == etag(path + filename)
-    print("上传完成")
-    return filename
-
-
-def download_file(filename, localpath):
-    """
-    下载文件
-    :param filename:
-    :param localpath:
-    :return:
-    """
-    if not filename or not localpath:
-        return
-
-    if not os.path.isdir(localpath):
-        os.mkdir(localpath)
-
-    # 构建鉴权对象
-    qn = Auth(qiniu_config["access_key"], qiniu_config["secret_key"])
-    downloadUrl = qn.private_download_url(qiniu_config["base_url"] + filename)
-    print("正在下载：", downloadUrl)
-    # 下载文件
-    resp = requests.get(downloadUrl)
-    filepath = localpath + filename
-    with open(filepath, 'wb+') as f:
-        f.write(resp.content)
-    print("下载完成")
+    def preview(self, type):
+        """
+        列出所有图片或视频
+        :param type: image:图片 video:视频
+        :return:
+        """
+        if type == 1 or type == 2:
+            return self._qiniu.get_data_by_type(type)
 
 
 if __name__ == '__main__':
     camera = Camera()
+    qiniu = Qiniu()
     pic = camera.take_picture()
-    upload_file(camera.camera_path, pic)
-    download_file(pic, "/home/pi/Desktop/")
+    file_url = qiniu.upload_file(camera.camera_path, pic)
+    qiniu.download_file(file_url)
