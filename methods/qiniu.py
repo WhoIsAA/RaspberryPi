@@ -105,7 +105,7 @@ class Qiniu:
                 sql = "SELECT * FROM qiniu where type='{}'".format(int(type))
                 self.cursor.execute(sql)
                 rows = self.cursor.fetchall()
-                if len(rows) > 0: return json.dumps(rows)
+                if len(rows) > 0: return rows
             except Exception as e:
                 print("!!! get_data_by_type = ", e)
 
