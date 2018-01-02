@@ -37,30 +37,6 @@ class Camera:
         timestr = time.strftime("%Y-%m-%d-%H-%M-%S", timeArray)
         return "video_%s.h264" % timestr
 
-    def get_url(self, key):
-        """
-        获得资源外链
-        :param key:文件名
-        :return:
-        """
-        return self._qiniu.get_url(key)
-
-    def get_video_thumbnail(self, key):
-        """
-        获得视频缩略图
-        :param key:
-        :return:
-        """
-        return self._qiniu.get_video_thumbnail(key)
-
-    def get_video_duration(self, key):
-        """
-        获得视频时长
-        :param key:
-        :return:
-        """
-        return self._qiniu.get_video_duration(key)
-
     def take_picture(self):
         """
         拍一张图片
@@ -131,10 +107,3 @@ class Camera:
         if type == 1 or type == 2:
             return self._qiniu.get_data_by_type(type)
 
-
-if __name__ == '__main__':
-    camera = Camera()
-    qiniu = Qiniu()
-    pic = camera.take_picture()
-    file_url = qiniu.upload_file(camera.camera_path, pic)
-    qiniu.download_file(file_url)

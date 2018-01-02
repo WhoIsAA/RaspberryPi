@@ -64,14 +64,15 @@ class Qiniu:
         filename = key.split('/')[-1]
         url = self.get_url(key)
         type = 1
-        thumbnail = ""
         duration = 0
         if info['mimeType'].startswith('video'):
             type = 2
-            thumbnail = self.get_video_thumbnail(key)
             duration = self.get_video_duration(key)
+        thumbnail = self.get_thumbnail(key, type)
         try:
-            sql = "INSERT INTO qiniu(filename, hash, fkey, url, mimeType, type, thumbnail, duration, fsize, putTime) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(filename, info['hash'], key, url, info['mimeType'], type, thumbnail, duration, info['fsize'], info['putTime'])
+            sql = "INSERT INTO qiniu(filename, hash, fkey, url, mimeType, type, thumbnail, duration, fsize, putTime) " \
+                  "VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')"\
+                .format(filename, info['hash'], key, url, info['mimeType'], type, thumbnail, duration, info['fsize'], info['putTime'])
             self.cursor.execute(sql)
             self.db.commit()
             print("* 写入数据库成功：", key)
@@ -192,13 +193,17 @@ class Qiniu:
             return ret
         return None
 
-    def get_video_thumbnail(self, key):
+    def get_thumbnail(self, key, type):
         """
-        获得视频缩略图
+        获得图片/视频缩略图
         :param key:
+        :param type:
         :return:
         """
-        return self.get_url(key) + "?vframe/jpg/offset/1/w/480/h/360"
+        if type == 1:
+            return self.get_url(key) + "?imageView2/0/w/320/h/240"
+        elif type == 2:
+            return self.get_url(key) + "?vframe/jpg/offset/1/w/480/h/360"
 
     def get_video_duration(self, key):
         """
